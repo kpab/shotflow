@@ -1,4 +1,5 @@
 export { parseConfig } from "./core/parser.js";
+export { render } from "./core/renderer.js";
 export {
   ConfigSchema,
   ScreenSchema,

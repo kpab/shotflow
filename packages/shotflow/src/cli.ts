@@ -1,23 +1,22 @@
 #!/usr/bin/env node
+import { writeFile } from "node:fs/promises";
+import { resolve } from "node:path";
 import { cac } from "cac";
 import { ZodError } from "zod";
-import { VERSION, parseConfig } from "./index.js";
+import { VERSION, parseConfig, render } from "./index.js";
 
 const cli = cac("shotflow");
 
 cli
   .command("build <config>", "Build flow HTML from YAML config")
-  .action(async (configPath: string) => {
+  .option("-o, --output <path>", "Output HTML path", { default: "./flow.html" })
+  .action(async (configPath: string, options: { output: string }) => {
     try {
       const config = await parseConfig(configPath);
-      const screenCount = Object.values(config.groups).reduce(
-        (sum, g) => sum + g.screens.length,
-        0,
-      );
-      console.log(
-        `Parsed: ${screenCount} screens, ${config.transitions.length} transitions`,
-      );
-      console.log("(HTML rendering not yet implemented)");
+      const html = render(config);
+      const outputPath = resolve(options.output);
+      await writeFile(outputPath, html, "utf-8");
+      console.log(`Wrote ${outputPath}`);
     } catch (err) {
       if (err instanceof ZodError) {
         console.error("Validation errors:");
