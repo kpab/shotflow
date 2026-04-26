@@ -1,5 +1,12 @@
 export { parseConfig } from "./core/parser.js";
-export { render } from "./core/renderer.js";
+export { render, type RenderOptions } from "./core/renderer.js";
+export {
+  build,
+  buildFromObject,
+  type BuildOptions,
+  type BuildFromObjectOptions,
+  type BuildRenderOptions,
+} from "./core/build.js";
 export {
   ConfigSchema,
   ScreenSchema,

@@ -1,9 +1,7 @@
 #!/usr/bin/env node
-import { writeFile } from "node:fs/promises";
-import { dirname, resolve } from "node:path";
 import { cac } from "cac";
 import { ZodError } from "zod";
-import { VERSION, parseConfig, render } from "./index.js";
+import { VERSION, build } from "./index.js";
 
 const cli = cac("shotflow");
 
@@ -18,19 +16,19 @@ cli
   .action(async (configPath: string, options: Record<string, unknown>) => {
     try {
       const format = parseFormat(options.format);
-      const config = await parseConfig(configPath);
-      const baseDir = dirname(resolve(configPath));
-      const html = await render(config, {
-        baseDir,
-        thumbnailWidth: parseNumber(options.thumbnailWidth, "--thumbnail-width"),
-        originalWidth: parseNumber(options.originalWidth, "--original-width"),
-        quality: parseNumber(options.quality, "--quality"),
-        format,
-        embedOriginal: options.original !== false,
+      const outputPath = String(options.output ?? "./flow.html");
+      const absOutputPath = await build({
+        configPath,
+        outputPath,
+        options: {
+          thumbnailWidth: parseNumber(options.thumbnailWidth, "--thumbnail-width"),
+          originalWidth: parseNumber(options.originalWidth, "--original-width"),
+          quality: parseNumber(options.quality, "--quality"),
+          format,
+          embedOriginal: options.original !== false,
+        },
       });
-      const outputPath = resolve(String(options.output ?? "./flow.html"));
-      await writeFile(outputPath, html, "utf-8");
-      console.log(`Wrote ${outputPath}`);
+      console.log(`Wrote ${absOutputPath}`);
     } catch (err) {
       reportError(err);
       process.exit(1);
