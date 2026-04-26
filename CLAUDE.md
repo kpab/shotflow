@@ -25,12 +25,12 @@
 - **パッケージ管理**: pnpm workspace（モノレポ構成）
 - **ビルド**: tsup
 - **テスト**: vitest
-- **CLI**: commander or cac（実装時に最終選定）
+- **CLI**: cac
 - **スキーマ**: zod
 - **YAML**: `yaml`（eemeli 製、コメント保持対応 / `js-yaml` ではない理由は v0.4 の編集機能でコメント保持が必要なため）
 - **画像処理**: sharp
 - **レイアウト**: dagre
-- **アイコン**: lucide（v0.3 で iconify 拡張）
+- **アイコン**: Lucide 互換 SVG パスを `src/core/icons.ts` にインライン同梱（v0.2 で curated 12 種、v0.3 で Iconify 統合予定）
 - **パンズーム**: svg-pan-zoom or Panzoom.js（実装時に最終選定）
 
 ## ディレクトリ構成（予定）
@@ -111,6 +111,21 @@ shotflow/
 - conventional commits 風プレフィックス推奨：`feat:`, `fix:`, `docs:`, `refactor:`, `chore:`, `test:`
 - 件名は英語・日本語どちらでも可
 
+## リリース運用
+
+- バージョニング: **semver**（v 接頭辞あり、例: `v0.2.0`）
+- バージョンソース: `packages/shotflow/package.json` の `version` と `src/index.ts` の `VERSION` 定数を **必ず同期**
+- 変更履歴: **Keep a Changelog** 形式で `CHANGELOG.md` を更新
+  - 未リリース変更は `[Unreleased]` セクションに追記
+  - リリース時に `[Unreleased]` を `[x.y.z] — YYYY-MM-DD` に格上げ
+- リリース手順:
+  1. `[Unreleased]` を `[x.y.z]` 化、`package.json` と `VERSION` 定数を bump（同一コミット推奨）
+  2. `git tag -a vx.y.z -m "..."`（annotated tag、本文は CHANGELOG エントリの要約）
+  3. `git push origin main --tags`
+  4. `gh release create vx.y.z --title "vx.y.z — <キャッチ>" --notes "..."`
+- 出荷済みバージョン・GitHub Release: <https://github.com/kpab/shotflow/releases>
+- npm publish は v0.3 以降に判断（v0.2 はドッグフード優先で見送り）
+
 ## 言語ルール
 
 - ユーザーへのレスポンスは **日本語**
@@ -124,6 +139,6 @@ shotflow/
 
 - `docs/design-decisions.md` — 論点1〜9 の決定事項とその根拠
 - `docs/roadmap.md` — バージョンごとの機能計画
-- `docs/spec.md` — YAML スキーマ仕様（v0.1 時点）
+- `docs/spec.md` — YAML スキーマ仕様（v0.2 時点）
 
 決定事項を変更する場合は、design-decisions.md に追記して履歴を残す。
