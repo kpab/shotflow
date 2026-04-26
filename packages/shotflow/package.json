@@ -3,6 +3,26 @@
   "version": "0.0.0",
   "description": "Generate single-HTML screen flow diagrams from screenshots and YAML.",
   "license": "MIT",
+  "author": "kpab",
+  "homepage": "https://github.com/kpab/shotflow#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kpab/shotflow.git",
+    "directory": "packages/shotflow"
+  },
+  "bugs": {
+    "url": "https://github.com/kpab/shotflow/issues"
+  },
+  "keywords": [
+    "screenshot",
+    "screen-flow",
+    "flow-diagram",
+    "documentation",
+    "yaml",
+    "html",
+    "dagre",
+    "svg"
+  ],
   "type": "module",
   "engines": {
     "node": ">=22"
