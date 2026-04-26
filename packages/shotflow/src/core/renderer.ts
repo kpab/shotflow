@@ -5,10 +5,36 @@ import {
   type LayoutGroup,
   type LayoutNode,
 } from "./layout.js";
+import { embedImage, type ImageFormat } from "../utils/image.js";
 
 const SVG_PADDING = 60;
 
-export function render(config: Config): string {
+export interface RenderOptions {
+  baseDir: string;
+  thumbnailWidth?: number;
+  quality?: number;
+  format?: ImageFormat;
+}
+
+export async function render(
+  config: Config,
+  options: RenderOptions,
+): Promise<string> {
+  const imageOpts = {
+    thumbnailWidth: options.thumbnailWidth ?? config.image.thumbnail_width,
+    quality: options.quality ?? config.image.quality,
+    format: options.format ?? config.image.format,
+  };
+
+  const screens = Object.values(config.groups).flatMap((g) => g.screens);
+  const imageEntries = await Promise.all(
+    screens.map(async (s) => {
+      const dataUrl = await embedImage(s.image, options.baseDir, imageOpts);
+      return [s.id, dataUrl] as const;
+    }),
+  );
+  const imagesByScreen = new Map<string, string>(imageEntries);
+
   const layout = computeLayout(config);
   const W = layout.width + SVG_PADDING * 2;
   const H = layout.height + SVG_PADDING * 2;
@@ -38,7 +64,7 @@ export function render(config: Config): string {
 <g transform="translate(${SVG_PADDING}, ${SVG_PADDING})">
 ${layout.groups.map(renderGroup).join("\n")}
 ${layout.edges.map(renderEdge).join("\n")}
-${layout.nodes.map(renderNode).join("\n")}
+${layout.nodes.map((n) => renderNode(n, imagesByScreen.get(n.id) ?? "")).join("\n")}
 </g>
 </svg>
 </main>
@@ -57,15 +83,18 @@ function renderGroup(group: LayoutGroup): string {
 </g>`;
 }
 
-function renderNode(node: LayoutNode): string {
+function renderNode(node: LayoutNode, imageDataUrl: string): string {
   const isModal = node.type === "modal";
   const rx = isModal ? 14 : 6;
   const dash = isModal ? ` stroke-dasharray="6 4"` : "";
   const imgH = node.height - 32;
+  const imgW = node.width - 16;
+  const imgInner = imageDataUrl
+    ? `<image href="${imageDataUrl}" x="8" y="8" width="${imgW}" height="${imgH - 8}" preserveAspectRatio="xMidYMid meet"/>`
+    : `<rect x="8" y="8" width="${imgW}" height="${imgH - 8}" fill="#e5e7eb" rx="4"/>`;
   return `<g class="screen ${node.type}" data-screen-id="${escapeHtml(node.id)}" transform="translate(${node.x}, ${node.y})">
   <rect width="${node.width}" height="${node.height}" rx="${rx}" fill="white" stroke="#d1d5db" stroke-width="1"${dash}/>
-  <rect x="8" y="8" width="${node.width - 16}" height="${imgH - 8}" fill="#e5e7eb" rx="4"/>
-  <text x="${node.width / 2}" y="${imgH / 2 + 4}" text-anchor="middle" font-size="11" fill="#9ca3af">[image]</text>
+  ${imgInner}
   <text x="${node.width / 2}" y="${node.height - 10}" text-anchor="middle" font-size="13" font-weight="500" fill="#111827">${escapeHtml(node.name)}</text>
 </g>`;
 }
