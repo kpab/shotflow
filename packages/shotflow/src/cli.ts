@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { cac } from "cac";
 import { ZodError } from "zod";
-import { VERSION, build } from "./index.js";
+import { VERSION, build, init } from "./index.js";
 
 const cli = cac("shotflow");
 
@@ -29,6 +29,27 @@ cli
         },
       });
       console.log(`Wrote ${absOutputPath}`);
+    } catch (err) {
+      reportError(err);
+      process.exit(1);
+    }
+  });
+
+cli
+  .command("init [dir]", "Scaffold a new shotflow project (flow.yaml + images/)")
+  .option("--force", "Overwrite existing flow.yaml")
+  .action(async (dir: string | undefined, options: Record<string, unknown>) => {
+    try {
+      const result = await init({ dir, force: Boolean(options.force) });
+      console.log(
+        `${result.overwrote ? "Overwrote" : "Created"} ${result.yamlPath}`,
+      );
+      console.log(`Created  ${result.imagesDir}/`);
+      console.log("");
+      console.log("Next steps:");
+      console.log("  1. Drop your screenshots into images/");
+      console.log("  2. Edit flow.yaml to match your screens");
+      console.log("  3. shotflow build flow.yaml -o flow.html");
     } catch (err) {
       reportError(err);
       process.exit(1);

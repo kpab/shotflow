@@ -22,4 +22,6 @@ export {
   type ImageConfig,
 } from "./core/schema.js";
 
-export const VERSION = "0.0.0";
+export { init, type InitOptions, type InitResult } from "./commands/init.js";
+
+export const VERSION = "0.2.0";
