@@ -1,0 +1,42 @@
+title: WEB受注システム 画面遷移図
+description: 管理側とバイヤー側の画面遷移を示す
+
+layout:
+  direction: horizontal
+  groups: [admin, buyer]
+
+groups:
+  admin:
+    label: 管理側
+    color: "#2563eb"
+    screens:
+      - id: admin_login
+        name: ログイン
+        image: ./images/admin/login.png
+      - id: admin_dashboard
+        name: ダッシュボード
+        image: ./images/admin/dashboard.png
+      - id: invite_modal
+        name: 招待モーダル
+        image: ./images/admin/invite.png
+        type: modal
+
+  buyer:
+    label: バイヤー側
+    color: "#16a34a"
+    screens:
+      - id: buyer_login
+        name: 初回ログイン
+        image: ./images/buyer/login.png
+
+transitions:
+  - from: admin_login
+    to: admin_dashboard
+    label: ログイン
+  - from: admin_dashboard
+    to: invite_modal
+    label: 招待ボタン
+    type: modal
+  - from: invite_modal
+    to: buyer_login
+    label: 招待メール送信
