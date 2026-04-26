@@ -36,8 +36,12 @@ It's optimized for documenting **existing business systems** — where you want 
 
 ```bash
 npm install shotflow                                # not yet published
-shotflow build flow.yaml -o out.html                # build single HTML
+shotflow init my-flow                               # scaffold a project
+cd my-flow && shotflow build flow.yaml -o out.html  # build single HTML
 ```
+
+`shotflow init` creates a minimal `flow.yaml` and an `images/` directory.
+Drop your screenshots into `images/`, edit `flow.yaml`, and you're ready to build.
 
 CLI flags:
 

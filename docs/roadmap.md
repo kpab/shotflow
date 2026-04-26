@@ -59,7 +59,7 @@ shotflow のバージョンごとの機能計画。
 
 ### 機能
 
-- [ ] `shotflow init` でテンプレ生成
+- [x] `shotflow init` でテンプレ生成 (main 先行実装、未タグ)
 - [ ] `shotflow dev` でファイル監視 + ライブリロード
 - [ ] `shotflow.config.ts` サポート（`defineConfig` ヘルパー）
 - [ ] 設定ファイル探索ルール（`.ts > .mts > .js > .yaml > flow.yaml`）

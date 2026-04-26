@@ -36,8 +36,12 @@
 
 ```bash
 npm install shotflow                                # まだ npm 未公開
-shotflow build flow.yaml -o out.html                # 単一 HTML をビルド
+shotflow init my-flow                               # テンプレートを生成
+cd my-flow && shotflow build flow.yaml -o out.html  # 単一 HTML をビルド
 ```
+
+`shotflow init` は最小構成の `flow.yaml` と `images/` ディレクトリを生成します。
+画像を `images/` に置いて、`flow.yaml` を編集すれば即動かせます。
 
 CLI フラグ：
 

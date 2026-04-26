@@ -7,6 +7,15 @@
 
 ## [Unreleased]
 
+### Added
+- `shotflow init [dir]` コマンド (v0.3 機能の先行実装)
+  - `flow.yaml` テンプレートと `images/` ディレクトリを生成
+  - `--force` フラグで既存 `flow.yaml` 上書き対応
+  - パブリック API: `init({ dir, force })` を export
+
+### Fixed
+- `VERSION` 定数を `package.json` の `version` と同期 (`0.0.0` → `0.2.0`)
+
 ## [0.2.0] — 2026-04-26
 
 ### Added
