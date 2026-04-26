@@ -13,7 +13,10 @@
 - パン / ズームによる俯瞰・詳細閲覧
 - クリックで原寸ポップアップ拡大
 - グループ別の色分け（管理側 / ユーザー側 / モバイルなど）
-- 矢印の種類分け（通常 / モーダル / メール経由など）
+- 矢印の種類分け（通常 / モーダル / メール経由）
+- ラベルに Lucide アイコンを埋め込み（mail / lock / bell など）
+- 凡例（legend）パネルの自動生成
+- `screen.position` で個別ノードの手動座標調整
 
 特に **既存の業務システム**を「画面同士がどう繋がっているか視覚的にドキュメント化」する用途に最適化されています。
 
@@ -29,7 +32,7 @@
 
 `shotflow` は「画像 + YAML → 単一 HTML」というニッチに振り切ります。
 
-## クイックスタート（v0.1）
+## クイックスタート（v0.2）
 
 ```bash
 npm install shotflow                                # まだ npm 未公開
@@ -68,6 +71,11 @@ transitions:
   - from: admin_login
     to: admin_dashboard
     label: ログイン
+    icon: lock          # Lucide アイコンをラベル横に表示（v0.2+）
+  - from: admin_dashboard
+    to: buyer_login
+    label: 招待メール送信
+    type: email         # 破線 + cyan + ✉ アイコン（v0.2+）
 ```
 
 完全なサンプルは [`examples/flow.yaml`](./examples/flow.yaml)、フルスキーマは [`docs/spec.md`](./docs/spec.md) を参照。
@@ -92,7 +100,7 @@ const html = await render(config, { baseDir: "./" });
 
 ## ロードマップ
 
-[docs/roadmap.md](./docs/roadmap.md) を参照。現状 v0.1 の機能をまず実装中、`init` / `dev` は v0.3 で追加予定。
+[docs/roadmap.md](./docs/roadmap.md) を参照。v0.2 の表現力強化機能を完了。`init` / `dev` は v0.3 で追加予定。
 
 ## ライセンス
 

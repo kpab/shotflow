@@ -13,7 +13,10 @@
 - Pan / zoom navigation
 - Click-to-zoom popup for full-resolution screenshots
 - Color-coded groups (admin / user / mobile, etc.)
-- Styled transition arrows (default, modal, email, ...)
+- Styled transition arrows (default, modal, email)
+- Lucide icons embedded in arrow labels (mail / lock / bell, ...)
+- Auto-generated legend panel
+- Per-node manual coordinate override via `screen.position`
 
 It's optimized for documenting **existing business systems** — where you want a real visual map of how screens connect, not abstract boxes.
 
@@ -29,7 +32,7 @@ It's optimized for documenting **existing business systems** — where you want 
 
 `shotflow` specializes in **screenshot-based screen transition diagrams** as a single shippable HTML.
 
-## Quickstart (v0.1)
+## Quickstart (v0.2)
 
 ```bash
 npm install shotflow                                # not yet published
@@ -68,6 +71,11 @@ transitions:
   - from: admin_login
     to: admin_dashboard
     label: sign in
+    icon: lock          # Lucide icon next to label (v0.2+)
+  - from: admin_dashboard
+    to: buyer_login
+    label: invite email
+    type: email         # dashed + cyan + ✉ icon (v0.2+)
 ```
 
 See [`examples/flow.yaml`](./examples/flow.yaml) for a fuller sample, and [`docs/spec.md`](./docs/spec.md) for the full schema.
@@ -92,7 +100,7 @@ const html = await render(config, { baseDir: "./" });
 
 ## Roadmap
 
-See [docs/roadmap.md](./docs/roadmap.md). Currently shipping v0.1 features; `init` and `dev` come in v0.3.
+See [docs/roadmap.md](./docs/roadmap.md). v0.2 expressivity features shipped; `init` and `dev` come in v0.3.
 
 ## License
 

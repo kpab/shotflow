@@ -410,8 +410,36 @@ YAML パーサに `js-yaml` ではなく **`yaml`（eemeli 製）** を採用す
 
 ---
 
+## 論点10: v0.2 アイコン取り込み戦略
+
+### 決定
+
+**v0.2 では curated な小規模インライン catalog（12 アイコン）を同梱する。** `lucide-static` 等の外部依存は導入しない。
+
+### 同梱アイコン（v0.2 時点）
+
+`mail`, `bell`, `link`, `external-link`, `lock`, `user`, `check`, `x`,
+`arrow-right`, `database`, `file`, `send`
+
+実装は `packages/shotflow/src/core/icons.ts` に Lucide 互換の SVG パスを直書き。
+
+### 根拠
+
+- v0.3 で Iconify 統合（`set:name` prefix 形式）に切り替える予定があり、それまでの過渡的実装としては最小依存が望ましい
+- `lucide-static` を入れて `require.resolve` で node_modules から SVG ファイルを読む形にすると、CLI バンドル時のパス解決が壊れやすい
+- 業務文書で実際に使う頻度が高いアイコンは数十種程度に収まる（mail / bell / lock / user 等）。全 1500 種を引き込む価値が薄い
+- Iconify 移行時は zod スキーマの `icon` フィールド形式を `"name"` → `"set:name"` のように拡張するだけで、curated catalog は内部的に `lucide:` prefix 付きで残せる
+
+### 注意事項
+
+- v0.2 で受け入れる `icon` 名は curated catalog の名前と一致する必要がある。未知の名前は無視（描画時に静かに省略）
+- Iconify 移行時に `mail` のような prefix なし指定との互換は維持（暗黙 `lucide:` 扱いで解決）
+
+---
+
 ## 履歴
 
 | 日付 | 変更内容 |
 |------|--------|
 | 2026-04-26 | 論点1〜9 を初回確定 |
+| 2026-04-26 | 論点10（v0.2 アイコン取り込み戦略）を追加 |

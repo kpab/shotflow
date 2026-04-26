@@ -1,9 +1,9 @@
-# YAML スキーマ仕様（v0.1）
+# YAML スキーマ仕様（v0.2）
 
 shotflow が読み込む `flow.yaml` のスキーマ仕様。
 zod での実装は `packages/shotflow/src/core/schema.ts` を参照。
 
-最終更新: 2026-04-26（v0.1 設計確定時点）
+最終更新: 2026-04-26（v0.2 機能追加時点）
 
 ---
 
@@ -77,6 +77,7 @@ screens:
     image: string             # 必須。画像ファイルパス（YAML からの相対 or 絶対）
     type: "default" | "modal" # 任意。デフォルト "default"
     description: string?      # 任意。ホバー時のツールチップ等で使用予定
+    position: { x, y }?       # 任意（v0.2+）。dagre 自動配置を上書きする手動座標
 ```
 
 ### type: modal の視覚効果
@@ -93,33 +94,27 @@ screens:
 
 ```yaml
 transitions:
-  - from: string              # 必須。Screen.id を参照
-    to: string                # 必須。Screen.id を参照
-    label: string?            # 任意。矢印のラベル
-    type: "default" | "modal" # 任意。デフォルト "default"
+  - from: string                       # 必須。Screen.id を参照
+    to: string                         # 必須。Screen.id を参照
+    label: string?                     # 任意。矢印のラベル
+    type: "default" | "modal" | "email" # 任意。デフォルト "default"
+    icon: string?                      # 任意（v0.2+）。Lucide アイコン名
 ```
 
-### type の視覚効果（v0.1）
+### type の視覚効果（v0.2）
 
-| type | 線 | 色 | 矢じり |
-|------|----|----|------|
-| `default` | 実線 | #374151 (dark gray) | 標準 |
-| `modal` | 点線 | #6b7280 半透明 | 小さめ |
+| type | 線 | 色 | 矢じり | アイコン自動付与 |
+|------|----|----|------|------|
+| `default` | 実線 | #374151 (dark gray) | 標準 | なし |
+| `modal` | 短破線 | #6b7280 半透明 | 小さめ | なし |
+| `email` | 長破線 | #0ea5e9 (cyan) | 標準 | `mail` |
 
----
+### 利用可能アイコン（v0.2 baseline）
 
-## v0.2 で追加予定
+`mail`, `bell`, `link`, `external-link`, `lock`, `user`, `check`, `x`,
+`arrow-right`, `database`, `file`, `send`
 
-```yaml
-# Screen
-screens:
-  - position: { x: number, y: number }   # 手動座標オーバーライド
-
-# Transition
-transitions:
-  - type: "email"             # type 拡張（破線 + cyan + ✉ アイコン）
-    icon: string              # 任意。Lucide アイコン名（例 "bell"）
-```
+未知のアイコン名は無視される（フォールバックなし）。v0.3 で Iconify 統合により拡張予定。
 
 ---
 
