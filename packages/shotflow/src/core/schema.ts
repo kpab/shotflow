@@ -41,9 +41,9 @@ export const LayoutConfigSchema = z
         group: z.number().positive().default(200),
         node: z.number().positive().default(80),
       })
-      .default({}),
+      .prefault({}),
   })
-  .default({});
+  .prefault({});
 
 export const ImageConfigSchema = z
   .object({
@@ -52,7 +52,7 @@ export const ImageConfigSchema = z
     quality: z.number().min(1).max(100).default(80),
     format: ImageFormat.default("webp"),
   })
-  .default({});
+  .prefault({});
 
 export const ConfigSchema = z.object({
   title: z.string().min(1),
