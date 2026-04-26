@@ -11,8 +11,10 @@ cli
   .command("build <config>", "Build flow HTML from YAML config")
   .option("-o, --output <path>", "Output HTML path", { default: "./flow.html" })
   .option("--thumbnail-width <n>", "Thumbnail max width in px")
+  .option("--original-width <n>", "Original image max width in px")
   .option("--quality <n>", "Image quality (1-100)")
   .option("--format <fmt>", "Image format: webp | jpeg | png")
+  .option("--no-original", "Skip original image embedding (smaller output, no lightbox)")
   .action(async (configPath: string, options: Record<string, unknown>) => {
     try {
       const format = parseFormat(options.format);
@@ -21,8 +23,10 @@ cli
       const html = await render(config, {
         baseDir,
         thumbnailWidth: parseNumber(options.thumbnailWidth, "--thumbnail-width"),
+        originalWidth: parseNumber(options.originalWidth, "--original-width"),
         quality: parseNumber(options.quality, "--quality"),
         format,
+        embedOriginal: options.original !== false,
       });
       const outputPath = resolve(String(options.output ?? "./flow.html"));
       await writeFile(outputPath, html, "utf-8");

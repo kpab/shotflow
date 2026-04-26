@@ -1,3 +1,5 @@
+import { readFile } from "node:fs/promises";
+import { createRequire } from "node:module";
 import type { Config } from "./schema.js";
 import {
   computeLayout,
@@ -5,39 +7,67 @@ import {
   type LayoutGroup,
   type LayoutNode,
 } from "./layout.js";
-import { embedImage, type ImageFormat } from "../utils/image.js";
+import { embedImagePair, type ImageFormat } from "../utils/image.js";
+
+const require = createRequire(import.meta.url);
 
 const SVG_PADDING = 60;
 
 export interface RenderOptions {
   baseDir: string;
   thumbnailWidth?: number;
+  originalWidth?: number;
   quality?: number;
   format?: ImageFormat;
+  embedOriginal?: boolean;
 }
 
 export async function render(
   config: Config,
   options: RenderOptions,
 ): Promise<string> {
-  const imageOpts = {
-    thumbnailWidth: options.thumbnailWidth ?? config.image.thumbnail_width,
-    quality: options.quality ?? config.image.quality,
-    format: options.format ?? config.image.format,
-  };
+  const format = options.format ?? config.image.format;
+  const quality = options.quality ?? config.image.quality;
+  const thumbnailWidth = options.thumbnailWidth ?? config.image.thumbnail_width;
+  const originalWidth = options.originalWidth ?? config.image.original_width;
+  const embedOriginal = options.embedOriginal !== false;
+
+  const thumbOpts = { thumbnailWidth, quality, format };
+  const originalOpts = embedOriginal
+    ? {
+        thumbnailWidth: originalWidth,
+        quality: Math.min(quality + 10, 100),
+        format,
+      }
+    : null;
 
   const screens = Object.values(config.groups).flatMap((g) => g.screens);
   const imageEntries = await Promise.all(
     screens.map(async (s) => {
-      const dataUrl = await embedImage(s.image, options.baseDir, imageOpts);
-      return [s.id, dataUrl] as const;
+      const pair = await embedImagePair(
+        s.image,
+        options.baseDir,
+        thumbOpts,
+        originalOpts,
+      );
+      return [s.id, pair] as const;
     }),
   );
-  const imagesByScreen = new Map<string, string>(imageEntries);
+  const imagesByScreen = new Map(imageEntries);
+
+  const originals: Record<string, string> = {};
+  for (const [id, { original }] of imagesByScreen.entries()) {
+    if (original) originals[id] = original;
+  }
 
   const layout = computeLayout(config);
   const W = layout.width + SVG_PADDING * 2;
   const H = layout.height + SVG_PADDING * 2;
+
+  const svgPanZoomScript = await readFile(
+    require.resolve("svg-pan-zoom"),
+    "utf-8",
+  );
 
   return `<!DOCTYPE html>
 <html lang="ja">
@@ -52,7 +82,8 @@ export async function render(
   ${config.description ? `<p class="description">${escapeHtml(config.description)}</p>` : ""}
 </header>
 <main>
-<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
+<div class="diagram-container">
+<svg id="diagram" viewBox="0 0 ${W} ${H}" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
 <defs>
   <marker id="arrow-default" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
     <path d="M0,0 L10,5 L0,10 Z" fill="#374151"/>
@@ -64,10 +95,19 @@ export async function render(
 <g transform="translate(${SVG_PADDING}, ${SVG_PADDING})">
 ${layout.groups.map(renderGroup).join("\n")}
 ${layout.edges.map(renderEdge).join("\n")}
-${layout.nodes.map((n) => renderNode(n, imagesByScreen.get(n.id) ?? "")).join("\n")}
+${layout.nodes.map((n) => renderNode(n, imagesByScreen.get(n.id)?.thumb ?? "")).join("\n")}
 </g>
 </svg>
+</div>
 </main>
+<div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-hidden="true">
+  <button class="lightbox-close" aria-label="Close">&times;</button>
+  <img class="lightbox-img" alt="">
+</div>
+<script>${svgPanZoomScript}</script>
+<script>window.SHOTFLOW_ORIGINALS=${jsonInScript(originals)};
+${runtimeScript()}
+</script>
 </body>
 </html>`;
 }
@@ -133,12 +173,54 @@ function styles(): string {
   return `
     * { box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 0; padding: 24px; background: #f9fafb; color: #111827; }
-    header { margin-bottom: 24px; }
-    h1 { margin: 0 0 4px; font-size: 24px; }
-    .description { color: #6b7280; margin: 0; }
-    main { background: white; border-radius: 8px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); overflow: auto; }
-    svg { display: block; max-width: 100%; height: auto; }
+    header { margin-bottom: 16px; }
+    h1 { margin: 0 0 4px; font-size: 22px; }
+    .description { color: #6b7280; margin: 0; font-size: 14px; }
+    main { padding: 0; }
+    .diagram-container { width: 100%; height: calc(100vh - 140px); min-height: 480px; border: 1px solid #e5e7eb; border-radius: 8px; background: white; overflow: hidden; }
+    .diagram-container svg { display: block; width: 100%; height: 100%; }
+    .screen { cursor: pointer; }
+    .screen:hover > rect:first-child { stroke: #2563eb; stroke-width: 1.5; }
+    .lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center; padding: 24px; }
+    .lightbox.open { display: flex; }
+    .lightbox-img { max-width: 90vw; max-height: 90vh; object-fit: contain; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+    .lightbox-close { position: absolute; top: 16px; right: 16px; background: white; border: 0; width: 36px; height: 36px; border-radius: 50%; font-size: 22px; cursor: pointer; line-height: 1; display: flex; align-items: center; justify-content: center; }
+    .lightbox-close:hover { background: #f3f4f6; }
   `;
+}
+
+function jsonInScript(obj: unknown): string {
+  return JSON.stringify(obj).replace(/</g, "\\u003c");
+}
+
+function runtimeScript(): string {
+  return `
+(function () {
+  if (typeof svgPanZoom !== 'undefined') {
+    var svg = document.getElementById('diagram');
+    if (svg) {
+      svgPanZoom(svg, { zoomEnabled: true, controlIconsEnabled: true, fit: true, center: true, minZoom: 0.2, maxZoom: 5 });
+    }
+  }
+  var lightbox = document.getElementById('lightbox');
+  var lightboxImg = lightbox.querySelector('.lightbox-img');
+  var lightboxClose = lightbox.querySelector('.lightbox-close');
+  function openLightbox(src) { lightboxImg.src = src; lightbox.classList.add('open'); lightbox.setAttribute('aria-hidden', 'false'); }
+  function closeLightbox() { lightbox.classList.remove('open'); lightboxImg.src = ''; lightbox.setAttribute('aria-hidden', 'true'); }
+  document.querySelectorAll('.screen').forEach(function (el) {
+    el.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var id = el.dataset.screenId;
+      var src = (window.SHOTFLOW_ORIGINALS || {})[id];
+      if (src) openLightbox(src);
+    });
+  });
+  lightbox.addEventListener('click', function (e) {
+    if (e.target === lightbox || e.target === lightboxClose) closeLightbox();
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeLightbox(); });
+})();
+`;
 }
 
 function escapeHtml(s: string): string {
