@@ -96,4 +96,4 @@ const html = await render(config, { baseDir: "./" });
 
 ## ライセンス
 
-MIT © 2026 [p4ni](https://p4ni.com)
+MIT © 2026 kpab

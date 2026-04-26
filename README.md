@@ -96,4 +96,4 @@ See [docs/roadmap.md](./docs/roadmap.md). Currently shipping v0.1 features; `ini
 
 ## License
 
-MIT © 2026 [p4ni](https://p4ni.com)
+MIT © 2026 kpab
