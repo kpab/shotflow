@@ -29,17 +29,70 @@
 
 `shotflow` は「画像 + YAML → 単一 HTML」というニッチに振り切ります。
 
-## クイックスタート（予定）
+## クイックスタート（v0.1）
 
 ```bash
-npx shotflow init                          # スターター flow.yaml を生成
-npx shotflow build flow.yaml -o out.html   # 単一 HTML をビルド
-npx shotflow dev   flow.yaml               # ライブリロード dev サーバー
+npm install shotflow                                # まだ npm 未公開
+shotflow build flow.yaml -o out.html                # 単一 HTML をビルド
 ```
+
+CLI フラグ：
+
+```
+-o, --output <path>          出力パス（デフォルト: ./flow.html）
+    --thumbnail-width <n>    サムネ最大幅 px（デフォルト: 600）
+    --original-width <n>     原寸最大幅 px（デフォルト: 2000）
+    --quality <n>            画質 1〜100（デフォルト: 80）
+    --format <fmt>           webp | jpeg | png（デフォルト: webp）
+    --no-original            原寸埋め込みをスキップ（lightbox 無効・出力軽量化）
+```
+
+## サンプル YAML
+
+```yaml
+title: 受注システム 画面遷移図
+
+groups:
+  admin:
+    label: 管理側
+    color: "#2563eb"
+    screens:
+      - id: admin_login
+        name: ログイン
+        image: ./images/admin/login.png
+      - id: admin_dashboard
+        name: ダッシュボード
+        image: ./images/admin/dashboard.png
+
+transitions:
+  - from: admin_login
+    to: admin_dashboard
+    label: ログイン
+```
+
+完全なサンプルは [`examples/flow.yaml`](./examples/flow.yaml)、フルスキーマは [`docs/spec.md`](./docs/spec.md) を参照。
+
+## プログラマティック API
+
+```ts
+import { build, parseConfig, render } from "shotflow";
+
+await build({
+  configPath: "./flow.yaml",
+  outputPath: "./out.html",
+  options: { quality: 80 },
+});
+
+// 低レベル API
+const config = await parseConfig("./flow.yaml");
+const html = await render(config, { baseDir: "./" });
+```
+
+> パブリック API は v1.0 まで **experimental**。マイナーリリースで破壊的変更が入ることがあります。
 
 ## ロードマップ
 
-[docs/roadmap.md](./docs/roadmap.md) を参照。
+[docs/roadmap.md](./docs/roadmap.md) を参照。現状 v0.1 の機能をまず実装中、`init` / `dev` は v0.3 で追加予定。
 
 ## ライセンス
 
