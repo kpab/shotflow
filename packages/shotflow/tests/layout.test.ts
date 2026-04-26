@@ -86,4 +86,66 @@ describe("computeLayout", () => {
     expect(modal?.width).toBeLessThan(normal!.width);
     expect(modal?.height).toBeLessThan(normal!.height);
   });
+
+  it("preserves email transition type and icon", () => {
+    const config = ConfigSchema.parse({
+      title: "T",
+      groups: {
+        a: {
+          label: "A",
+          screens: [
+            { id: "x", name: "X", image: "i" },
+            { id: "y", name: "Y", image: "i" },
+          ],
+        },
+      },
+      transitions: [
+        { from: "x", to: "y", type: "email", icon: "bell" },
+      ],
+    });
+    const layout = computeLayout(config);
+    const e = layout.edges[0];
+    expect(e?.type).toBe("email");
+    expect(e?.icon).toBe("bell");
+  });
+
+  it("applies screen.position override", () => {
+    const config = ConfigSchema.parse({
+      title: "T",
+      groups: {
+        a: {
+          label: "A",
+          screens: [
+            { id: "p", name: "P", image: "i", position: { x: 500, y: 300 } },
+            { id: "q", name: "Q", image: "i" },
+          ],
+        },
+      },
+      transitions: [{ from: "q", to: "p" }],
+    });
+    const layout = computeLayout(config);
+    const p = layout.nodes.find((n) => n.id === "p");
+    expect(p?.x).toBe(500);
+    expect(p?.y).toBe(300);
+  });
+
+  it("recomputes group bbox when position overrides exist", () => {
+    const config = ConfigSchema.parse({
+      title: "T",
+      groups: {
+        a: {
+          label: "A",
+          screens: [
+            { id: "p", name: "P", image: "i", position: { x: 1000, y: 800 } },
+          ],
+        },
+      },
+    });
+    const layout = computeLayout(config);
+    const group = layout.groups[0]!;
+    expect(group.x).toBeLessThanOrEqual(1000);
+    expect(group.y).toBeLessThanOrEqual(800);
+    expect(group.x + group.width).toBeGreaterThanOrEqual(1000);
+    expect(group.y + group.height).toBeGreaterThanOrEqual(800);
+  });
 });

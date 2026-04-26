@@ -139,4 +139,70 @@ describe("ConfigSchema", () => {
     expect(result.groups.a?.screens[1]?.type).toBe("modal");
     expect(result.transitions[0]?.type).toBe("modal");
   });
+
+  it("accepts email transition type", () => {
+    const result = ConfigSchema.parse({
+      title: "T",
+      groups: minimalGroups,
+      transitions: [
+        { from: "s1", to: "s1", type: "email", label: "send" },
+      ],
+    });
+    expect(result.transitions[0]?.type).toBe("email");
+  });
+
+  it("rejects unknown transition type", () => {
+    expect(() =>
+      ConfigSchema.parse({
+        title: "T",
+        groups: minimalGroups,
+        transitions: [{ from: "s1", to: "s1", type: "webhook" }],
+      }),
+    ).toThrow();
+  });
+
+  it("accepts transition with icon field", () => {
+    const result = ConfigSchema.parse({
+      title: "T",
+      groups: minimalGroups,
+      transitions: [{ from: "s1", to: "s1", icon: "bell" }],
+    });
+    expect(result.transitions[0]?.icon).toBe("bell");
+  });
+
+  it("accepts screen.position with x/y", () => {
+    const result = ConfigSchema.parse({
+      title: "T",
+      groups: {
+        a: {
+          label: "A",
+          screens: [
+            {
+              id: "s1",
+              name: "S1",
+              image: "./i",
+              position: { x: 100, y: 200 },
+            },
+          ],
+        },
+      },
+    });
+    expect(result.groups.a?.screens[0]?.position).toEqual({ x: 100, y: 200 });
+  });
+
+  it("rejects screen.position without x or y", () => {
+    expect(() =>
+      ConfigSchema.parse({
+        title: "T",
+        groups: {
+          a: {
+            label: "A",
+            screens: [
+              { id: "s1", name: "S1", image: "./i", position: { x: 100 } },
+            ],
+          },
+        },
+      }),
+    ).toThrow();
+  });
 });
