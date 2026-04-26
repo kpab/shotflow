@@ -32,8 +32,8 @@ shotflow のバージョンごとの機能計画。
 - email type 矢印（v0.2）
 - アイコンライブラリ統合（v0.2 で email + lucide）
 - グループ別カラーリング（v0.2）
-- `flowshot init`（v0.3）
-- `flowshot dev`（v0.3）
+- `shotflow init`（v0.3）
+- `shotflow dev`（v0.3）
 - TS 設定ファイル（v0.3）
 - 画面上編集機能（v0.4〜v0.5）
 
