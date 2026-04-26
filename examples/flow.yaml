@@ -33,6 +33,7 @@ transitions:
   - from: admin_login
     to: admin_dashboard
     label: ログイン
+    icon: lock
   - from: admin_dashboard
     to: invite_modal
     label: 招待ボタン
@@ -40,3 +41,4 @@ transitions:
   - from: invite_modal
     to: buyer_login
     label: 招待メール送信
+    type: email

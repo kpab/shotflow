@@ -7,9 +7,14 @@ const HexColor = z
   });
 
 const ScreenType = z.enum(["default", "modal"]);
-const TransitionType = z.enum(["default", "modal"]);
+const TransitionType = z.enum(["default", "modal", "email"]);
 const Direction = z.enum(["horizontal", "vertical"]);
 const ImageFormat = z.enum(["webp", "jpeg", "png"]);
+
+const PositionSchema = z.object({
+  x: z.number(),
+  y: z.number(),
+});
 
 export const ScreenSchema = z.object({
   id: z.string().min(1),
@@ -17,6 +22,7 @@ export const ScreenSchema = z.object({
   image: z.string().min(1),
   type: ScreenType.default("default"),
   description: z.string().optional(),
+  position: PositionSchema.optional(),
 });
 
 export const GroupSchema = z.object({
@@ -30,6 +36,7 @@ export const TransitionSchema = z.object({
   to: z.string().min(1),
   label: z.string().optional(),
   type: TransitionType.default("default"),
+  icon: z.string().min(1).optional(),
 });
 
 export const LayoutConfigSchema = z
